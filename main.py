@@ -1,38 +1,64 @@
-import requests
-import time
+from aiogram import Dispatcher, Bot, F
+from aiogram.types import Message, ContentType
+from aiogram.filters import Command
 
 
-API_URL :str = 'https://api.telegram.org/bot'
-API_CATS_URL: str = 'https://aws.random.cat/meow'
 BOT_TOKEN: str = '6137158393:AAHSresyen2VGkJkGzz7Vf1qpVPvmq--yxM'
-TEXT: str = 'LOL'
-ERROR_TEXT: str = 'Здесь должна была быть картинка с котиком :('
-MAX_COUNTER: int = 100
 
-offset: int = -2
-counter: int = 0
-chat_id: int
-cat_response: requests.Response
-cat_link: str
+bot: Bot = Bot(BOT_TOKEN)
+dp: Dispatcher = Dispatcher()
 
-while counter < MAX_COUNTER:
-    print(f"attempt = {counter}")
+@dp.message(Command(commands=["start"]))
+async def procces_start_command(message: Message):
+    await message.answer("Hello, \nI am Echo-bot! \nText me")
 
-    updates = requests.get(f"{API_URL}{BOT_TOKEN}/getUpdates?offset={offset + 1}").json()
-
-    if updates['result']:
-        for result in updates['result']:
-            offset = result['update_id']
-            chat_id = result['message']['chat']['id']
-
-            cat_response = requests.get(API_CATS_URL)
-            if cat_response.status_code == 200:
-                cat_link = cat_response.json()['file']
-                requests.get(f"{API_URL}{BOT_TOKEN}/sendPhoto?chat_id={chat_id}&photo={cat_link}")
-            else:
-                requests.get(f"{API_URL}{BOT_TOKEN}/sendMessage?chat_id={chat_id}&text={ERROR_TEXT}")
-        
-    time.sleep(1)
-    counter += 1
+@dp.message(Command(commands=["help"]))
+async def procces_help_command(message: Message):
+    await message.answer("Text me something and I will reply your message")
 
 
+@dp.message()
+async def send_echo(message: Message):
+    try:
+        print(message.json())
+        await message.send_copy(chat_id=message.chat.id)
+    except TypeError:
+        await message.reply(text='Данный тип апдейтов не поддерживается '
+                                 'методом send_copy')
+                                 
+'''
+
+# async def send_photo_echo(message: Message):
+#     await message.reply_photo(message.photo[0].file_id)
+
+# async def send_sticker_echo(message: Message):
+#     print(message.json())
+#     await message.reply_sticker(message.sticker.file_id)
+    
+# async def send_audio_echo(message: Message):
+#     print(message.json())
+#     await message.reply_audio(message.aud)
+    
+# async def send_video_echo(message: Message):
+#     print(message.json())
+#     await message.reply_video(message.photo[0].file_id)
+    
+# async def send_voice_echo(message: Message):
+#     print(message.json())
+#     await message.reply_voice()
+
+# dp.message.register(send_sticker_echo, F.sticker)
+# dp.message.register(send_photo_echo, F.photo)
+
+# dp.message.register(send_audio_echo, F.audio)
+# dp.message.register(send_video_echo, F.video)
+# dp.message.register(send_voice_echo, F.voice)
+
+# dp.message.register(send_animation_echo, F.animation)
+# dp.message.register(send_document_echo, F.document)
+
+# dp.message.register(send_echo)
+'''
+
+if __name__ == '__main__':
+    dp.run_polling(bot)
