@@ -21,7 +21,7 @@ class Config:
     tg_bot: TgBot
     db: DatabaseConfing
 
-def load_config(path: str | None) -> Config:
+def load_config(path = None) -> Config:
 
     env = Env()
     env.read_env(path)
