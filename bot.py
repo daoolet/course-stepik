@@ -1,9 +1,9 @@
 import asyncio
 
 from aiogram import Bot, Dispatcher
-from tgbot.config import load_config
+from config.config import load_config
 
-from tgbot.handlers import user_handlers, other_handlers
+from handlers import user_handlers, other_handlers
 
 
 async def main():
