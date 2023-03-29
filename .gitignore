@@ -2,3 +2,4 @@ venv
 trash.py
 .env
 *.pyc
+.vscode

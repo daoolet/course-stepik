@@ -1,40 +1,34 @@
+import asyncio
+import logging
+
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, KeyboardButtonPollType
-from aiogram.filters import Command, CommandStart
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
-
-from environs import Env
+from config_data.config import Config, load_config
+from handlers import user_handler, other_handler
 
 
-env: Env = Env()
-env.read_env()
+logger = logging.getLogger(__name__)
 
-bot: Bot = Bot(token="6137158393:AAHSresyen2VGkJkGzz7Vf1qpVPvmq--yxM")
-dp: Dispatcher = Dispatcher()
+async def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format=u'%(filename)s:%(lineno)d #%(levelname)-8s '
+               u'[%(asctime)s] - %(name)s - %(message)s')
+    
+    logger.info("Starting bot")
 
-# Инициализируем билдер
-kb_builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
+    config: Config = load_config()
+    bot: Bot = Bot(token=config.tg_bot.token, parse_mode="HTML")
+    dp: Dispatcher = Dispatcher()
 
-# Создаем кнопки
-contact_btn: KeyboardButton = KeyboardButton(text="Send contact",
-                                             request_contact=True)
-geo_btn: KeyboardButton = KeyboardButton(text="Send location",
-                                         request_location=True)
-poll_btn: KeyboardButton = KeyboardButton(text="Create a poll",
-                                          request_poll=True)
+    dp.include_router(user_handler.router)
+    dp.include_router(other_handler.router)
 
-# Добавляем кнопки в билдер
-kb_builder.row(contact_btn, geo_btn, poll_btn, width=1)
-
-# Создаем объект клавиатуры
-keyboard: ReplyKeyboardMarkup = kb_builder.as_markup(resize_keyboard=True,
-                                                     one_time_keyboard=True)
-
-@dp.message(CommandStart())
-async def process_start_command(message: Message):
-    await message.answer(text="Testing", reply_markup=keyboard)
-
-
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    dp.run_polling(bot)
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Bot stopped")
+    

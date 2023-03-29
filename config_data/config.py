@@ -14,4 +14,4 @@ class Config:
 def load_config(path: str | None = None) -> Config:
     env: Env = Env()
     env.read_env()
-    return Config(tg_bot=Tgbot(token=env("TOKEN_BOT")))
+    return Config(tg_bot=Tgbot(token=env("BOT_TOKEN")))
